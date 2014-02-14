@@ -48,12 +48,22 @@
       <name>Scala-tools Maven2 Repository</name>
       <url>http://www.scala-tools.org/repo-releases</url>
     </repository>
+    <repository>
+      <id>sonatype</id>
+      <name>Sonatype</name>
+      <url>http://repository.sonatype.org/content/groups/public/</url>
+    </repository>
   </repositories>
   <pluginRepositories>
     <pluginRepository>
       <id>scala-tools.org</id>
       <name>Scala-tools Maven2 Repository</name>
       <url>http://www.scala-tools.org/repo-releases</url>
+    </pluginRepository>
+    <pluginRepository>
+      <id>sonatype</id>
+      <name>Sonatype</name>
+      <url>http://repository.sonatype.org/content/groups/public/</url>
     </pluginRepository>
   </pluginRepositories>
 
