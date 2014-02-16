@@ -72,11 +72,11 @@
       <artifactId>slf4j-api</artifactId>
       <version>1.7.5</version>
     </dependency>
-    <dependency>
-      <groupId>eu.lp0.slf4j</groupId>
-      <artifactId>slf4j-android</artifactId>
-      <version>1.7.5-7</version>
-    </dependency>
+    <!--<dependency>-->
+    <!--<groupId>eu.lp0.slf4j</groupId>-->
+    <!--<artifactId>slf4j-android</artifactId>-->
+    <!--<version>1.7.5-7</version>-->
+    <!--</dependency>-->
     <!--Serialization-->
     <dependency>
       <groupId>org.scala-lang</groupId>
@@ -178,6 +178,9 @@
         <version>2.15.2</version>
         <configuration>
           <scalaVersion>${scala.version}</scalaVersion>
+          <!--<args>-->
+            <!--<arg>-Xlog-implicits</arg>-->
+          <!--</args>-->
         </configuration>
         <executions>
           <execution>
@@ -230,7 +233,7 @@
           <filereports>WDF TestSuite.txt</filereports>
           <wildcardSuites>pl</wildcardSuites>
           <!--<suites>pl.lolczak.buffer.CyclicBufferSpec</suites>-->
-          <skipTests>false</skipTests>
+          <skipTests>true</skipTests>
         </configuration>
         <executions>
           <execution>
@@ -243,6 +246,19 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>release</id>
+      <dependencies>
+        <dependency>
+          <groupId>eu.lp0.slf4j</groupId>
+          <artifactId>slf4j-android</artifactId>
+          <version>1.7.5-7</version>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
 
   <!--<profiles>
   <profile>

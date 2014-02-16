@@ -15,7 +15,30 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:text="Preview"
-      android:id="@+id/button" android:layout_alignParentLeft="true" android:layout_marginLeft="23dp"
-      android:layout_alignParentTop="true" android:layout_marginTop="45dp" android:onClick="preview"/>
+      android:id="@+id/button"
+      android:onClick="preview"
+      android:layout_toRightOf="@+id/button2" android:layout_alignParentTop="true" android:layout_marginTop="178dp"/>
+  <Button
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="Save"
+      android:id="@+id/button1"
+      android:onClick="save"
+      android:layout_toRightOf="@+id/hello_world_tv" android:layout_alignParentTop="true"
+      android:layout_marginTop="53dp"/>
+  <Button
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="Start"
+      android:id="@+id/button2"
+      android:onClick="start" android:layout_alignLeft="@+id/hello_world_tv" android:layout_alignParentTop="true"
+      android:layout_marginTop="102dp"/>
+  <Button
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="Stop"
+      android:id="@+id/button3"
+      android:layout_alignParentLeft="true" android:layout_marginLeft="166dp" android:layout_alignTop="@+id/button2"
+      android:onClick="stop"/>
 
 </RelativeLayout>

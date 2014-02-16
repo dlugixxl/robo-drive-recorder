@@ -9,6 +9,7 @@ import scala.util.Success
 import scala.util.Failure
 import scala.Some
 import DurableMediaCyclicBuffer._
+import com.typesafe.scalalogging.slf4j.Logging
 
 /**
  *
@@ -16,7 +17,7 @@ import DurableMediaCyclicBuffer._
  * @author Lukasz Olczak
  */
 class DurableMediaCyclicBuffer[A](private val location: File, private val bufferSize: Long)
-                                 (implicit private val serializer: Serializer[A]) extends MediaCyclicBuffer[A] {
+                                 (implicit private val serializer: Serializer[A]) extends MediaCyclicBuffer[A] with Logging {
 
   private val effectiveSize = bufferSize - HeaderLength
 
@@ -29,6 +30,7 @@ class DurableMediaCyclicBuffer[A](private val location: File, private val buffer
   init()
 
   private def init() = {
+    logger.info(s"Initializing buffer in $location with size $effectiveSize")
     if (!location.exists()) {
       location.createNewFile()
     }
@@ -42,6 +44,7 @@ class DurableMediaCyclicBuffer[A](private val location: File, private val buffer
     file.writeLong(NullOffset)
     lastOffset = NullOffset
     currentOffset = HeaderLength
+    logger.debug(s"Buffer $location initialized")
   }
 
   override def getLast(): Option[A] = {
@@ -84,12 +87,12 @@ class DurableMediaCyclicBuffer[A](private val location: File, private val buffer
     }
 
   private def isNextFrameOverwritten(offset: Long, prev: Long): Boolean = {
-      if (prev < offset) {
-        currentOffset > prev && currentOffset <= offset
-      } else {
-         //overlapping occurred
-        currentOffset > prev
-      }
+    if (prev < offset) {
+      currentOffset > prev && currentOffset <= offset
+    } else {
+      //overlapping occurred
+      currentOffset > prev
+    }
   }
 
   private def readFrame(offset: Long) = {
@@ -99,7 +102,6 @@ class DurableMediaCyclicBuffer[A](private val location: File, private val buffer
 
   override def put(element: A): Unit = {
     val elementBytes = serializer.serialize(element)
-
     if (elementBytes.length > effectiveSize) {
       throw new BufferTooSmallException(bufferSize = bufferSize, elementSize = elementBytes.length)
     }
@@ -107,6 +109,7 @@ class DurableMediaCyclicBuffer[A](private val location: File, private val buffer
     val nextOffset = currentOffset + frame.size
     if (nextOffset > bufferSize) {
       currentOffset = HeaderLength
+      logger.info("Buffer overlapped")
     }
     file.seek(currentOffset)
     frame.writeTo(file)
