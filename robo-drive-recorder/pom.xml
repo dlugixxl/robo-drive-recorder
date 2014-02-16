@@ -55,11 +55,44 @@
       <version>2.0</version>
       <scope>test</scope>
     </dependency>
+    <!--LOGGING-->
+    <dependency>
+      <groupId>com.typesafe</groupId>
+      <artifactId>scalalogging-slf4j_2.10</artifactId>
+      <version>1.0.1</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.7.5</version>
+    </dependency>
+    <dependency>
+      <groupId>eu.lp0.slf4j</groupId>
+      <artifactId>slf4j-android</artifactId>
+      <version>1.7.5-7</version>
+    </dependency>
+    <!--Serialization-->
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-pickling_2.10</artifactId>
+      <version>0.8.0-SNAPSHOT</version>
+    </dependency>
+
   </dependencies>
 
   <build>
     <finalName>${project.artifactId}</finalName>
-
+    <resources>
+      <resource>
+        <directory>${project.basedir}/src/main/resources</directory>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -342,6 +375,16 @@
       <id>sonatype</id>
       <name>Sonatype</name>
       <url>http://repository.sonatype.org/content/groups/public/</url>
+    </repository>
+    <repository>
+      <id>oss-sonatype</id>
+      <name>Oss-Sonatype</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>always</updatePolicy>
+        <checksumPolicy>ignore</checksumPolicy>
+      </snapshots>
     </repository>
   </repositories>
   <pluginRepositories>
