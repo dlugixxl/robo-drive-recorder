@@ -4,6 +4,7 @@ import org.scalatest._
 import java.io.File
 import scala.None
 import pl.lolczak.buffer.BufferTooSmallException
+import TestData._
 
 /**
  *
@@ -49,7 +50,7 @@ class DurableMediaCyclicBufferTest extends FeatureSpec with Matchers with GivenW
 
     scenario("Retrieving data from buffer with one element") {
       Given("buffer with one element")
-      val sampleElement = new SampleVo("lukasz", 12)
+      val sampleElement = new SampleVo(SampleName, SampleAge, SampleMaturity)
       val buffer = new DurableMediaCyclicBuffer[SampleVo](location = bufferLocation, bufferSize = 100)
       buffer.put(sampleElement)
 
@@ -62,6 +63,7 @@ class DurableMediaCyclicBufferTest extends FeatureSpec with Matchers with GivenW
       val result = element.get
       result.name shouldBe sampleElement.name
       result.age shouldBe sampleElement.age
+      result.mature shouldBe sampleElement.mature
     }
 
   }
@@ -69,7 +71,7 @@ class DurableMediaCyclicBufferTest extends FeatureSpec with Matchers with GivenW
   feature("Saving data into buffer") {
     scenario("Saving to large element") {
       Given("element that is larger than buffer size")
-      val sampleElement = new SampleVo("lukasz", 12)
+      val sampleElement = new SampleVo(SampleName, SampleAge, SampleMaturity)
       val buffer = new DurableMediaCyclicBuffer[SampleVo](location = bufferLocation, bufferSize = 20)
 
       When("element is saved into buffer")
@@ -77,7 +79,7 @@ class DurableMediaCyclicBufferTest extends FeatureSpec with Matchers with GivenW
         buffer.put(sampleElement)
       }
       Then("exception is thrown")
-      ex shouldNot be (null)
+      ex shouldNot be(null)
     }
   }
 
@@ -94,9 +96,10 @@ class DurableMediaCyclicBufferTest extends FeatureSpec with Matchers with GivenW
       Given("empty buffer")
       val buffer = new DurableMediaCyclicBuffer[SampleVo](location = bufferLocation, bufferSize = 120)
       When("too much data is saved")
-      (1 to 100).foreach { i =>
-        val sampleElement = new SampleVo("lukasz", i)
-        buffer.put(sampleElement)
+      (1 to 100).foreach {
+        i =>
+          val sampleElement = new SampleVo(SampleName, i, SampleMaturity)
+          buffer.put(sampleElement)
       }
       Then("buffer should has fixed size")
       bufferLocation.length() shouldBe 120
@@ -105,17 +108,28 @@ class DurableMediaCyclicBufferTest extends FeatureSpec with Matchers with GivenW
     scenario("Stores only not overwritten elements") {
       Given("overlapped bufer")
       val buffer = new DurableMediaCyclicBuffer[SampleVo](location = bufferLocation, bufferSize = 140)
-      (1 to 100).foreach { i =>
-        val sampleElement = new SampleVo("lukasz", i)
-        buffer.put(sampleElement)
+      (1 to 100).foreach {
+        i =>
+          val sampleElement = new SampleVo(SampleName, i, SampleMaturity)
+          buffer.put(sampleElement)
       }
       When("retrieve last 100 elements")
       val elements = buffer.getLast(100)
       Then("should return last 2 not overwritten")
       elements.get.size shouldBe 2
-      elements.get shouldBe List(new SampleVo("lukasz", 99), new SampleVo("lukasz", 100))
+      elements.get shouldBe List(new SampleVo(SampleName, 99, SampleMaturity), new SampleVo(SampleName, 100, SampleMaturity))
     }
   }
+
+}
+
+object TestData {
+
+  val SampleName = "Łukasz Olczak"
+
+  val SampleAge = -45
+
+  val SampleMaturity = false
 
 }
 
