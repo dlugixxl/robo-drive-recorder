@@ -1,18 +1,19 @@
 package pl.lolczak.buffer.fs
 
-import java.io.{RandomAccessFile, File}
+import java.io.{ByteArrayOutputStream, RandomAccessFile, File}
 import pl.lolczak.buffer.{BufferTooSmallException, MediaCyclicBuffer}
-import pl.lolczak.io.stream.Serializer
-import scala.util.Try
+import pl.lolczak.io.stream.{SerializerOutputStream, Serializer}
 import pl.lolczak.buffer.fs.SerializationConstants._
-import scala.util.Success
-import scala.util.Failure
-import scala.Some
 import DurableMediaCyclicBuffer._
 import com.typesafe.scalalogging.slf4j.Logging
+import pl.lolczak.concurrent.lock.{RangeLockManager, RangeLock, LockManager}
+import java.nio.channels.FileChannel
+import pl.lolczak.concurrent.lock.{WriteLock, Range}
+import java.nio.ByteBuffer
 
 /**
  *
+ * In Android, FileLock works between processes, but does not work between threads in a process.
  *
  * @author Lukasz Olczak
  */
@@ -21,11 +22,17 @@ class DurableMediaCyclicBuffer[A](private val location: File, private val buffer
 
   private val effectiveSize = bufferSize - HeaderLength
 
+  private val headerRange = new Range(0, HeaderLength)
+
   private var lastOffset: Long = _
 
   private var currentOffset: Long = _
 
   private var file: RandomAccessFile = _
+
+  private val lockManager: LockManager[RangeLock] = new RangeLockManager
+
+  private var writeChannel: FileChannel = _
 
   init()
 
@@ -34,7 +41,9 @@ class DurableMediaCyclicBuffer[A](private val location: File, private val buffer
     if (!location.exists()) {
       location.createNewFile()
     }
-    file = new RandomAccessFile(location, "rws")
+    file = new RandomAccessFile(location, "rw")
+    writeChannel = file.getChannel
+
     initStructure()
   }
 
@@ -47,30 +56,12 @@ class DurableMediaCyclicBuffer[A](private val location: File, private val buffer
     logger.debug(s"Buffer $location initialized")
   }
 
-  override def getLast(): Option[A] = {
-    if (lastOffset == NullOffset) None
-    else readLastChunk() match {
-      case Success(e) => Some(e)
-      case Failure(_) => None
-    }
-  }
-
-  private def readLastChunk(): Try[A] = {
-    file.seek(lastOffset)
-    val frame = BufferFrame.readFrom(file)
-
-    serializer.deserialize(frame.content)
-  }
-
-  override def getLast(max: Int): Option[List[A]] = {
-    if (lastOffset == NullOffset) None
+  override def getLast(max: Int): List[A] = {
+    if (lastOffset == NullOffset) Nil
     else {
       val frames = readFrames(lastOffset, max).reverse
 
-      val elements = frames.map(frame => serializer.deserialize(frame.content))
-      val (successes, failures) = elements.partition(_.isSuccess)
-      if (failures.isEmpty) Some(successes.map(_.get))
-      else None
+      frames.map(frame => serializer.deserialize(frame.content))
     }
   }
 
@@ -111,16 +102,30 @@ class DurableMediaCyclicBuffer[A](private val location: File, private val buffer
       currentOffset = HeaderLength
       logger.info("Buffer overlapped")
     }
-    file.seek(currentOffset)
-    frame.writeTo(file)
-    updateOffset(frame.size)
+    val frameBytes = BufferFrameSerializer.serialize(frame)
+    val lock = lockManager.acquireLocks(WriteLock(headerRange), WriteLock(currentOffset, frameBytes.length))
+    try {
+      //      file.seek(currentOffset)
+      //      frame.writeTo(file)
+      writeChannel.write(ByteBuffer.wrap(frameBytes), currentOffset)
+      updateOffset(frame.size)
+      writeChannel.force(false)
+    } finally {
+      lock.release()
+    }
   }
 
   private def updateOffset(frameSize: Int) {
     lastOffset = currentOffset
     currentOffset += frameSize
-    file.seek(0)
-    file.writeLong(lastOffset)
+
+
+    val bytes = new ByteArrayOutputStream(8)
+    val outStream = new SerializerOutputStream(bytes)
+    outStream.writeLong(lastOffset)
+    writeChannel.write(ByteBuffer.wrap(bytes.toByteArray), currentOffset)
+    //    file.seek(0)
+    //    file.writeLong(lastOffset)
   }
 
   override def size: Long = bufferSize

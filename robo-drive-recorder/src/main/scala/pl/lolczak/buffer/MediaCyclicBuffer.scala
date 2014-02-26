@@ -10,9 +10,7 @@ trait MediaCyclicBuffer[A] {
   @throws(classOf[BufferTooSmallException])
   def put(element: A)
 
-  def getLast: Option[A]
-
-  def getLast(max: Int): Option[List[A]]
+  def getLast(max: Int): List[A]
 
   def size: Long
 

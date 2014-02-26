@@ -1,7 +1,5 @@
 package pl.lolczak.io.stream
 
-import scala.util.Try
-
 /**
  *
  *
@@ -9,8 +7,9 @@ import scala.util.Try
  */
 trait Serializer[A] {
 
-  def deserialize(bytes: Array[Byte]): Try[A]
-  
+  @throws(classOf[SerializationException])
+  def deserialize(bytes: Array[Byte]): A
+
   def serialize(element: A): Array[Byte]
 
 }

@@ -15,7 +15,11 @@ class RangeLock(val range: Range, val lockType: LockType) {
 }
 
 object WriteLock {
+
   def apply(offset: Long, size: Long) = new RangeLock(new Range(offset, size), Write)
+
+  def apply(range: Range) = new RangeLock(range, Write)
+
 }
 
 object ReadLock {

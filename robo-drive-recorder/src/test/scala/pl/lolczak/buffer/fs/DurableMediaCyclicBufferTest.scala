@@ -43,9 +43,9 @@ class DurableMediaCyclicBufferTest extends FeatureSpec with Matchers with GivenW
       Given("empty buffer")
       val emptyBuffer = new DurableMediaCyclicBuffer[SampleVo](location = bufferLocation, bufferSize = 100)
       When("element is got")
-      val element = emptyBuffer.getLast()
+      val element = emptyBuffer.getLast(1)
       Then("buffer should return nothing")
-      element should be(None)
+      element should be(Nil)
     }
 
     scenario("Retrieving data from buffer with one element") {
@@ -55,12 +55,11 @@ class DurableMediaCyclicBufferTest extends FeatureSpec with Matchers with GivenW
       buffer.put(sampleElement)
 
       When("retrieve last element")
-      val element = buffer.getLast()
+      val elements = buffer.getLast(1)
 
       Then("retrieved element should match to saved element")
-      element.isDefined shouldBe true
+      val result = elements.head
 
-      val result = element.get
       result.name shouldBe sampleElement.name
       result.age shouldBe sampleElement.age
       result.mature shouldBe sampleElement.mature
@@ -116,8 +115,8 @@ class DurableMediaCyclicBufferTest extends FeatureSpec with Matchers with GivenW
       When("retrieve last 100 elements")
       val elements = buffer.getLast(100)
       Then("should return last 2 not overwritten")
-      elements.get.size shouldBe 2
-      elements.get shouldBe List(new SampleVo(SampleName, 99, SampleMaturity), new SampleVo(SampleName, 100, SampleMaturity))
+      elements.size shouldBe 2
+      elements shouldBe List(new SampleVo(SampleName, 99, SampleMaturity), new SampleVo(SampleName, 100, SampleMaturity))
     }
   }
 
