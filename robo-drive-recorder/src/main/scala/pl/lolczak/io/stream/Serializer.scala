@@ -8,8 +8,10 @@ package pl.lolczak.io.stream
 trait Serializer[A] {
 
   @throws(classOf[SerializationException])
-  def deserialize(bytes: Array[Byte]): A
+  def deserialize(inStream: SerializerInputStream): A
 
-  def serialize(element: A): Array[Byte]
+  def serialize(element: A, outStream: SerializerOutputStream)
+
+  def sizeOf(element: A): Long
 
 }

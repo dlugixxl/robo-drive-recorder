@@ -11,8 +11,16 @@ import java.io.{ByteArrayOutputStream, ByteArrayInputStream}
 
 object SampleVoSerializer extends Serializer[SampleVo] {
 
-  def deserialize(bytes: Array[Byte]): SampleVo = {
-    val inStream = new SerializerInputStream(new ByteArrayInputStream(bytes))
+  private val StringSizeLength = 4
+
+  private val TypeNameLength = 12
+
+  private val IntSize = 4
+
+  private val BooleanSize = 1
+
+  @throws(classOf[SerializationException])
+  override def deserialize(inStream: SerializerInputStream): SampleVo = {
     val className = inStream.readString()
     if (className != "SampleVo") {
       throw new SerializationException("Bad preamble")
@@ -25,16 +33,14 @@ object SampleVoSerializer extends Serializer[SampleVo] {
     new SampleVo(name, age, mature)
   }
 
-  def serialize(element: SampleVo): Array[Byte] = {
-    val bytes = new ByteArrayOutputStream()
-    val outStream = new SerializerOutputStream(bytes)
+  override def serialize(element: SampleVo, outStream: SerializerOutputStream): Unit = {
     outStream.writeString("SampleVo")
     outStream.writeString(element.name)
     outStream.writeInt(element.age)
     outStream.writeBoolean(element.mature)
-    outStream.flush()
-    bytes.toByteArray
   }
+
+  def sizeOf(element: SampleVo): Long = TypeNameLength + StringSizeLength + element.name.length + IntSize + BooleanSize
 
 }
 

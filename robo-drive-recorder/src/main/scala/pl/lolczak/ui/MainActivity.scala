@@ -8,7 +8,7 @@ import com.typesafe.scalalogging.slf4j.Logging
 import scala.util.control.NonFatal
 import java.io.File
 import pl.lolczak.context.ApplicationContext
-import pl.lolczak.buffer.fs.DurableMediaCyclicBuffer
+import pl.lolczak.buffer.fs.FsCyclicBuffer
 import pl.lolczak.io.camera.{DriveRecorder, CameraDevice, VideoFrameSerializer, VideoFrame}
 import pl.lolczak.constant.RdrConstants
 import pl.lolczak.ui.camera.OverlayPreview
@@ -49,7 +49,7 @@ class MainActivity extends Activity with Logging {
     logger.debug("Initializing media buffer")
     val bufferLocation = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "rdr_buffer.bin")
 
-    ApplicationContext.buffer = Some(new DurableMediaCyclicBuffer[VideoFrame](bufferLocation, RdrConstants.BufferSize)(VideoFrameSerializer))
+    ApplicationContext.buffer = Some(new FsCyclicBuffer[VideoFrame](bufferLocation, RdrConstants.BufferSize)(VideoFrameSerializer))
   }
 
   override def onCreateOptionsMenu(menu: Menu): Boolean = {
