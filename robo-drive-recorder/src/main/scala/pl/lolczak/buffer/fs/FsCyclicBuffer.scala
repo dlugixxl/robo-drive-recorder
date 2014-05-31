@@ -28,7 +28,7 @@ class FsCyclicBuffer[A](private val location: File, private val bufferSize: Long
       location.createNewFile()
     } else {
       //todo
-//      throw new NotImplementedError()
+      //      throw new NotImplementedError()
     }
     new RandomAccessFile(location, "rws")
   }
